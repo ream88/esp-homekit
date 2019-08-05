@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  sdk:
+    image: sdk
+    build: sdk
+
+  rtos:
+    image: rtos
+    build: rtos
+    volumes:
+      - ./esp-homekit-demo:/project

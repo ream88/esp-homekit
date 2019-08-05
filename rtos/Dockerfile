@@ -1,0 +1,11 @@
+FROM ubuntu:16.04 as builder
+
+RUN apt-get update && apt-get install -y git
+RUN git clone --recursive https://github.com/Superhouse/esp-open-rtos.git /opt/esp-open-rtos
+
+
+FROM sdk:latest
+WORKDIR /project
+ENV SDK_PATH /opt/esp-open-rtos
+
+COPY --from=builder /opt/esp-open-rtos /opt/esp-open-rtos
