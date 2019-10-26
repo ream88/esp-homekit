@@ -14,6 +14,7 @@ RUN su docker -c " \
     make STANDALONE=n ; \
 "
 
+
 FROM ubuntu:16.04
 ENV PATH /opt/xtensa-lx106-elf/bin:$PATH
 
