@@ -1,6 +1,15 @@
 [submodule "esp-open-rtos"]
 	path = esp-open-rtos
 	url = https://github.com/SuperHouse/esp-open-rtos.git
-[submodule "esp-homekit-demo"]
-	path = esp-homekit-demo
-	url = https://github.com/maximkulkin/esp-homekit-demo.git
+[submodule "deps/esp-wifi-config"]
+	path = deps/esp-wifi-config
+	url = https://github.com/maximkulkin/esp-wifi-config.git
+[submodule "deps/esp-wolfssl"]
+	path = deps/esp-wolfssl
+	url = https://github.com/maximkulkin/esp-wolfssl.git
+[submodule "deps/esp-cjson"]
+	path = deps/esp-cjson
+	url = https://github.com/maximkulkin/esp-cjson.git
+[submodule "deps/esp-homekit"]
+	path = deps/esp-homekit
+	url = https://github.com/maximkulkin/esp-homekit.git

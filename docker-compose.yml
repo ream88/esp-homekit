@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   sdk:
@@ -10,3 +10,5 @@ services:
     build: rtos
     volumes:
       - ./esp-homekit-demo:/project
+      - ./deps:/project/deps
+      - ./src:/project/src
