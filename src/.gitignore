@@ -1,4 +1,3 @@
 build/
 firmware/
-/wifi.h
-/examples/*/wifi.h
+wifi.h
