@@ -39,9 +39,7 @@ const int button_gpio = 0;
 void switch_on_callback(homekit_characteristic_t *_ch, homekit_value_t on,
                         void *context);
 void button_callback(uint8_t gpio, button_event_t event);
-
 void relay_write(bool on) { gpio_write(relay_gpio, on ? 1 : 0); }
-
 void led_write(bool on) { gpio_write(led_gpio, on ? 0 : 1); }
 
 void led_blink(int times) {
@@ -51,8 +49,6 @@ void led_blink(int times) {
     led_write(false);
     vTaskDelay(100 / portTICK_PERIOD_MS);
   }
-
-  vTaskDelete(NULL);
 }
 
 void switch_identify_task(void *_args) {
@@ -65,7 +61,7 @@ void switch_identify(homekit_value_t _value) {
   xTaskCreate(switch_identify_task, "Switch identify", 128, NULL, 2, NULL);
 }
 
-homekit_characteristic_t name = HOMEKIT_CHARACTERISTIC_(NAME, "Sonoff Switch");
+homekit_characteristic_t name = HOMEKIT_CHARACTERISTIC_(NAME, "Ceiling Lights");
 
 homekit_characteristic_t switch_on = HOMEKIT_CHARACTERISTIC_(
     ON, false, .callback = HOMEKIT_CHARACTERISTIC_CALLBACK(switch_on_callback));
@@ -87,22 +83,14 @@ homekit_accessory_t *accessories[] = {
                                 &name,
                                 HOMEKIT_CHARACTERISTIC(MANUFACTURER,
                                                        "Mario Uher"),
-                                HOMEKIT_CHARACTERISTIC(SERIAL_NUMBER,
-                                                       "037A2BABF19D"),
-                                HOMEKIT_CHARACTERISTIC(MODEL, "Basic"),
-                                HOMEKIT_CHARACTERISTIC(FIRMWARE_REVISION,
-                                                       "1.0.0"),
+                                HOMEKIT_CHARACTERISTIC(MODEL, "Sonoff"),
                                 HOMEKIT_CHARACTERISTIC(IDENTIFY,
                                                        switch_identify),
                                 NULL}),
-                    HOMEKIT_SERVICE(
-                        SWITCH, .primary = true,
-                        .characteristics =
-                            (homekit_characteristic_t *[]){
-                                HOMEKIT_CHARACTERISTIC(
-                                    NAME,
-                                    "Sonoff Ceiling Lights"),
-                                &switch_on, NULL}),
+                    HOMEKIT_SERVICE(SWITCH, .primary = true,
+                                    .characteristics =
+                                        (homekit_characteristic_t *[]){
+                                            &name, &switch_on, NULL}),
                     NULL}),
     NULL};
 
@@ -121,28 +109,22 @@ void reset_configuration() {
               NULL);
 }
 
-void gpio_init() {
-  gpio_enable(led_gpio, GPIO_OUTPUT);
-  led_write(true);
-  gpio_enable(relay_gpio, GPIO_OUTPUT);
-  relay_write(switch_on.value.bool_value);
-}
-
 void button_callback(uint8_t gpio, button_event_t event) {
   switch (event) {
   case button_event_single_press:
+    printf("Toggling relay\n");
     switch_on.value.bool_value = !switch_on.value.bool_value;
     relay_write(switch_on.value.bool_value);
     homekit_characteristic_notify(&switch_on, switch_on.value);
     break;
 
   case button_event_long_press:
+    printf("Resetting configuration\n");
     reset_configuration();
     break;
 
   default:
-    // noop
-    break;
+    printf("Unknown button event: %d\n", event);
   }
 }
 
@@ -176,13 +158,24 @@ homekit_server_config_t config = {.accessories = accessories,
 void user_init(void) {
   uart_set_baud(0, 115200);
 
+  gpio_enable(led_gpio, GPIO_OUTPUT);
+  gpio_enable(relay_gpio, GPIO_OUTPUT);
+
   // Flash the LED on start
   led_blink(1);
 
-  wifi_init();
+  // Enable relay after boot
+  switch_on.value.bool_value = true;
+  relay_write(switch_on.value.bool_value);
+
+  xTaskCreate(wifi_init, "Initialize wifi", 256, NULL, 2, NULL);
+
+  if (button_create(button_gpio, 0, 4000, button_callback)) {
+    printf("Failed to initialize button\n");
+  }
+
   homekit_server_init(&config);
   create_accessory_name();
 
-  gpio_init();
-  button_create(button_gpio, 0, 4000, button_callback);
+  homekit_characteristic_notify(&switch_on, switch_on.value);
 }

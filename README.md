@@ -1,4 +1,4 @@
-# sonoff-esp-homekit
+# homekit-sonoff-lights
 
 This is my take on [Sonoff](https://www.amazon.de/gp/product/B07K5VS5GV) powered
 ceiling lights. Following projects inspired me, so be sure to check them out as
@@ -38,21 +38,41 @@ Update the Wi-Fi config in `src/wifi.h`:
 #define WIFI_PASSWORD "password"
 ```
 
+```sh
+export ESPPORT=/dev/cu.usbserial-1420
+```
+
 The proper device can be found running `ls /dev/*usb*`. For an ESP connected via
-an UART use the `/dev/cu.usbserial-*` device, for USB use `/dev/tty.usbserial-*`.
+an UART use the `/dev/cu.usbserial-*` device, for USB use
+`/dev/tty.usbserial-*`.
 
 ```sh
 export SDK_PATH=`realpath ./esp-open-rtos`
-export ESPPORT=/dev/cu.usbserial-1420
+```
 
+```sh
 docker-compose run --rm rtos make -C src all
+```
+
+Please ensure to put the Sonoff in flash/programming mode by pressing the button
+**before** connecting the UART cable.
+
+```sh
 make -C src flash
 ```
 
-If there are any problems updating the firmware try resetting the ESP:
+## Troubleshooting
+
+If there are any problems writing the firmware try resetting the Sonoff:
 
 ```sh
 make -C src erase_flash
+```
+
+To monitor the Sonoff, you can use the following:
+
+```sh
+make -C src monitor
 ```
 
 ## [License (MIT)](./LICENSE)
